@@ -31,7 +31,7 @@ namespace CSToJSConverter
         /// </summary>
         /// <param name="text">Root node</param>
         /// <returns></returns>
-        public static CSharpSyntaxNode GetRootFromText(string text) 
+        public static CSharpSyntaxNode GetRootFromProgram(string text) 
             => 
             CSharpSyntaxTree
             .ParseText(text)

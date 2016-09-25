@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis;
 
 namespace CSToJSConverter
 {
@@ -25,6 +26,30 @@ namespace CSToJSConverter
 
         private void AppendCode(string code) => _result.Append(code);
 
+        private void AppendCodeLine() => _result.Append(Environment.NewLine);
+
+        private void AppendCodeLine(string code) => _result.Append(code + Environment.NewLine);
+
+        //private void AppendLeadingTrivia(CSharpSyntaxNode node)
+        //{
+        //    Func<SyntaxTrivia, bool> filter =
+        //        t =>
+        //        {
+        //            switch (t.Kind())
+        //            {
+        //                case SyntaxKind.EndOfLineTrivia:
+        //                case SyntaxKind.MultiLineCommentTrivia:
+        //                case SyntaxKind.SingleLineCommentTrivia:
+        //                    return true;
+        //                default:
+        //                    return false;
+        //            }
+        //        };
+
+        //    foreach (var trivia in node.ChildTokens().First().LeadingTrivia.Where(filter))
+        //        AppendCode(trivia.ToString());
+        //}
+
         public override void VisitBinaryExpression(BinaryExpressionSyntax node)
         {
             // For now we use recursion to process binary expressions, 
@@ -44,7 +69,7 @@ namespace CSToJSConverter
                 case SyntaxKind.LogicalAndExpression:
                 case SyntaxKind.LogicalOrExpression:
                     Visit(node.Left);
-                    _result.Append(" " + node.OperatorToken.Text + " ");
+                    AppendCode(" " + node.OperatorToken.Text + " ");
                     Visit(node.Right);
                     break;
                 default:
@@ -54,7 +79,7 @@ namespace CSToJSConverter
 
         public override void VisitIdentifierName(IdentifierNameSyntax node)
         {
-            AppendCode(node.Identifier.ValueText);
+            AppendCode(node.Identifier.Text);
         }
 
         public override void VisitLiteralExpression(LiteralExpressionSyntax node)
@@ -74,9 +99,39 @@ namespace CSToJSConverter
 
         public override void VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax node)
         {
-            //var v = null;
-            VariableDeclarationSyntax declaration = node.Declaration;
-            //AppendCode(declaration.Type.)
+            
+            Action<VariableDeclaratorSyntax> DeclaratorProcessor = declarator =>
+            {
+                string identifier = declarator.Identifier.Text;
+                if (declarator.Initializer == null)
+                    AppendCode($"var {identifier};");
+                else
+                {
+                    AppendCode($"var {identifier} = ");
+                    Visit(declarator.Initializer.Value);
+                    AppendCode(";");
+                }
+            };
+
+            var variables = node.Declaration.Variables;
+            for (int i = 0; i < variables.Count - 1; i++)
+            {
+                DeclaratorProcessor(variables[i]);
+                // inserting new line between declarations
+                AppendCodeLine();
+            }
+            DeclaratorProcessor(variables.Last());
+        }
+
+        public override void VisitBlock(BlockSyntax node)
+        {
+            var statements = node.Statements;
+            for (int i = 0; i < statements.Count - 1; i++)
+            {
+                Visit(statements[i]);
+                AppendCodeLine();
+            }
+            Visit(statements.Last());
         }
     }
 }
