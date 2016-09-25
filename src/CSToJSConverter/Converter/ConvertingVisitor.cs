@@ -15,6 +15,16 @@ namespace CSToJSConverter
     {
         private ConverterResult _result = new ConverterResult();
 
+        public static string Convert(CSharpSyntaxNode root)
+        {
+            var converter = new ConvertingVisitor();
+            converter.Visit(root);
+
+            return converter._result.GetCode();
+        }
+
+        private void AppendCode(string code) => _result.Append(code);
+
         public override void VisitBinaryExpression(BinaryExpressionSyntax node)
         {
             // For now we use recursion to process binary expressions, 
@@ -34,7 +44,7 @@ namespace CSToJSConverter
                 case SyntaxKind.LogicalAndExpression:
                 case SyntaxKind.LogicalOrExpression:
                     Visit(node.Left);
-                    _result.Append(node.OperatorToken.ToFullString());
+                    _result.Append(" " + node.OperatorToken.Text + " ");
                     Visit(node.Right);
                     break;
                 default:
@@ -42,32 +52,31 @@ namespace CSToJSConverter
             }
         }
 
-        public static string Convert(CSharpSyntaxNode root)
-        {
-            var converter = new ConvertingVisitor();
-            converter.Visit(root);
-
-            return converter._result.GetCode();
-        }
-
         public override void VisitIdentifierName(IdentifierNameSyntax node)
         {
-            _result.Append(node.Identifier.ToFullString());
+            AppendCode(node.Identifier.ValueText);
         }
 
         public override void VisitLiteralExpression(LiteralExpressionSyntax node)
         {
-            _result.Append(node.Token.ToFullString());
+            AppendCode(node.Token.Text);
         }
 
         public override void VisitParenthesizedExpression(ParenthesizedExpressionSyntax node)
         {
             if (node.Expression is BinaryExpressionSyntax)
             {
-                _result.Append(node.OpenParenToken.ToFullString());
+                AppendCode(node.OpenParenToken.Text);
                 Visit(node.Expression);
-                _result.Append(node.CloseParenToken.ToFullString());
+                AppendCode(node.CloseParenToken.Text);
             }
+        }
+
+        public override void VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax node)
+        {
+            //var v = null;
+            VariableDeclarationSyntax declaration = node.Declaration;
+            //AppendCode(declaration.Type.)
         }
     }
 }
