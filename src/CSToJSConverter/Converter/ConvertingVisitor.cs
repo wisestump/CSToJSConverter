@@ -50,6 +50,16 @@ namespace CSToJSConverter
         //        AppendCode(trivia.ToString());
         //}
 
+        public override void DefaultVisit(SyntaxNode node)
+        {
+            throw new Exception($"Node {node.GetType()} is not supported");
+        }
+
+        public void Traverse(SyntaxNode node)
+        {
+            base.DefaultVisit(node);
+        }
+
         public override void VisitBinaryExpression(BinaryExpressionSyntax node)
         {
             // For now we use recursion to process binary expressions, 
@@ -89,12 +99,9 @@ namespace CSToJSConverter
 
         public override void VisitParenthesizedExpression(ParenthesizedExpressionSyntax node)
         {
-            if (node.Expression is BinaryExpressionSyntax)
-            {
-                AppendCode(node.OpenParenToken.Text);
-                Visit(node.Expression);
-                AppendCode(node.CloseParenToken.Text);
-            }
+            AppendCode(node.OpenParenToken.Text);
+            Visit(node.Expression);
+            AppendCode(node.CloseParenToken.Text);
         }
 
         public override void VisitLocalDeclarationStatement(LocalDeclarationStatementSyntax node)
