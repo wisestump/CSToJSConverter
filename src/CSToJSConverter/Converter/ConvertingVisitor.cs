@@ -60,6 +60,21 @@ namespace CSToJSConverter
             base.DefaultVisit(node);
         }
 
+        public override void VisitCompilationUnit(CompilationUnitSyntax node)
+        {
+            Traverse(node);
+        }
+
+        public override void VisitGlobalStatement(GlobalStatementSyntax node)
+        {
+            Traverse(node);
+        }
+
+        public override void VisitExpressionStatement(ExpressionStatementSyntax node)
+        {
+            Traverse(node);
+        }
+
         public override void VisitBinaryExpression(BinaryExpressionSyntax node)
         {
             // For now we use recursion to process binary expressions, 
