@@ -95,6 +95,7 @@ namespace CSToJSConverter
         {
             AppendCode("return ");
             node.Expression.Accept(this);
+            AppendCode(";");
         }
 
         public override void VisitCompilationUnit(CompilationUnitSyntax node)
@@ -125,11 +126,20 @@ namespace CSToJSConverter
                 case SyntaxKind.ModuloExpression:
                 case SyntaxKind.LeftShiftExpression:
                 case SyntaxKind.RightShiftExpression:
+
                 case SyntaxKind.BitwiseAndExpression:
                 case SyntaxKind.BitwiseOrExpression:
                 case SyntaxKind.ExclusiveOrExpression:
                 case SyntaxKind.LogicalAndExpression:
                 case SyntaxKind.LogicalOrExpression:
+
+                case SyntaxKind.LessThanExpression:
+                case SyntaxKind.GreaterThanExpression:
+                case SyntaxKind.LessThanOrEqualExpression:
+                case SyntaxKind.GreaterThanOrEqualExpression:
+                case SyntaxKind.EqualsExpression:
+                case SyntaxKind.NotEqualsExpression:
+
                     Visit(node.Left);
                     AppendCode(" " + node.OperatorToken.Text + " ");
                     Visit(node.Right);
@@ -178,6 +188,7 @@ namespace CSToJSConverter
                 AppendCodeLine(";");
                 DeclaratorProcessor(variables[i]);
             }
+            AppendCode(";");
         }
 
         public override void VisitBlock(BlockSyntax node)
@@ -186,10 +197,60 @@ namespace CSToJSConverter
             for (int i = 0; i < statements.Count - 1; i++)
             {
                 Visit(statements[i]);
-                AppendCodeLine(";");
+                AppendCodeLine();
             }
             Visit(statements.Last());
+        }
+
+        public override void VisitIfStatement(IfStatementSyntax node)
+        {
+            AppendCode("if (");
+            node.Condition.Accept(this);
+            AppendCodeLine(")");
+            AppendCodeLine("{");
+            node.Statement.Accept(this);
+            AppendCodeLine();
+            if (node.Else != null)
+            {
+                AppendCodeLine("}");
+                if (node.Else.Statement.Kind() == SyntaxKind.IfStatement)
+                {
+                    AppendCode("else ");
+                    node.Else.Statement.Accept(this);
+                }
+                else
+                {
+                    AppendCodeLine("else");
+                    AppendCodeLine("{");
+                    node.Else.Statement.Accept(this);
+                    AppendCodeLine();
+                    AppendCode("}");
+                }
+
+            }
+            else
+            {
+                AppendCode("}");
+            }
+
+        }
+
+        public override void VisitAssignmentExpression(AssignmentExpressionSyntax node)
+        {
+            var left = node.Left;
+            var right = node.Right;
+            var operatorToken = node.OperatorToken;
+
+            left.Accept(this);
+            AppendCode($" {operatorToken.Text} ");
+            right.Accept(this);
             AppendCode(";");
+        }
+
+        public override void VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax node)
+        {
+            AppendCode(node.OperatorToken.Text);
+            node.Operand.Accept(this);
         }
     }
 }
