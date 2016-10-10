@@ -1,4 +1,5 @@
 ﻿using CSToJSConverter;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -40,6 +41,26 @@ namespace ConverterTest
                 .Body;
 
             string convertedText = ConvertingVisitor.Convert(statements);
+            Assert.AreEqual(expected, convertedText);
+        }
+
+        /// <summary>
+        /// Checks if converted C# declarations matches given JavaScript code
+        /// </summary>
+        /// <param name="expected">JavaScript code</param>
+        /// <param name="block">C# statement list</param>
+        internal static void AssertDeclarations(string expected, string block)
+        {
+            CSharpSyntaxNode root = SyntaxBuilder.GetRootFromProgram(WrapWithMainFunction(block));
+            List<MethodDeclarationSyntax> declarations = root
+                .DescendantNodes()
+                .OfType<MethodDeclarationSyntax>()
+                .Where(method => method.Identifier.Text != "Main")
+                .ToList();
+
+            string convertedText = declarations
+                .Select(ConvertingVisitor.Convert)
+                .Aggregate(string.Concat);
             Assert.AreEqual(expected, convertedText);
         }
 

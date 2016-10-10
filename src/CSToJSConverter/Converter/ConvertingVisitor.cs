@@ -60,6 +60,43 @@ namespace CSToJSConverter
             base.DefaultVisit(node);
         }
 
+        public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
+        {
+            AppendCode($"function {node.Identifier.Text}(");
+            node.ParameterList.Accept(this);
+            AppendCodeLine(")");
+            AppendCodeLine("{");
+            node.Body.Accept(this);
+            AppendCodeLine();
+            AppendCode("}");
+        }
+
+        public override void VisitPredefinedType(PredefinedTypeSyntax node)
+        {
+            Traverse(node);
+        }
+
+        public override void VisitParameterList(ParameterListSyntax node)
+        {
+            for (int i = 0; i < node.Parameters.Count - 1; i++)
+            {
+                node.Parameters[i].Accept(this);
+                AppendCode(", ");
+            }
+            node.Parameters.Last().Accept(this);
+        }
+
+        public override void VisitParameter(ParameterSyntax node)
+        {
+            AppendCode(node.Identifier.Text);
+        }
+
+        public override void VisitReturnStatement(ReturnStatementSyntax node)
+        {
+            AppendCode("return ");
+            node.Expression.Accept(this);
+        }
+
         public override void VisitCompilationUnit(CompilationUnitSyntax node)
         {
             Traverse(node);
@@ -126,23 +163,21 @@ namespace CSToJSConverter
             {
                 string identifier = declarator.Identifier.Text;
                 if (declarator.Initializer == null)
-                    AppendCode($"var {identifier};");
+                    AppendCode($"var {identifier}");
                 else
                 {
                     AppendCode($"var {identifier} = ");
                     Visit(declarator.Initializer.Value);
-                    AppendCode(";");
                 }
             };
 
             var variables = node.Declaration.Variables;
-            for (int i = 0; i < variables.Count - 1; i++)
+            DeclaratorProcessor(variables[0]);
+            for (int i = 1; i < variables.Count; i++)
             {
+                AppendCodeLine(";");
                 DeclaratorProcessor(variables[i]);
-                // inserting new line between declarations
-                AppendCodeLine();
             }
-            DeclaratorProcessor(variables.Last());
         }
 
         public override void VisitBlock(BlockSyntax node)
@@ -151,9 +186,10 @@ namespace CSToJSConverter
             for (int i = 0; i < statements.Count - 1; i++)
             {
                 Visit(statements[i]);
-                AppendCodeLine();
+                AppendCodeLine(";");
             }
             Visit(statements.Last());
+            AppendCode(";");
         }
     }
 }
