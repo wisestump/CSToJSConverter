@@ -252,5 +252,16 @@ namespace CSToJSConverter
             AppendCode(node.OperatorToken.Text);
             node.Operand.Accept(this);
         }
+
+        public override void VisitWhileStatement(WhileStatementSyntax node)
+        {
+            AppendCode("while (");
+            node.Condition.Accept(this);
+            AppendCodeLine(")");
+            AppendCodeLine("{");
+            node.Statement.Accept(this);
+            AppendCodeLine();
+            AppendCode("}");
+        }
     }
 }

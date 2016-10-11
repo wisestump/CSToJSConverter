@@ -46,5 +46,40 @@ sign = 0;
 
 
         }
+
+        [TestMethod]
+        public void CycleWhileTest()
+        {
+            var input =
+@"int i = 0;
+while(i < 10)
+i += 1;";
+            var expected =
+@"var i = 0;
+while (i < 10)
+{
+i += 1;
+}";
+
+            AssertBlock(expected, input);
+            input =
+@"int i = 1;
+double fact = 1;
+while(i < 10)
+{
+d *= i;
+i += 1;
+}";
+            expected =
+@"var i = 1;
+var fact = 1;
+while (i < 10)
+{
+d *= i;
+i += 1;
+}";
+            AssertBlock(expected, input);
+
+        }
     }
 }
