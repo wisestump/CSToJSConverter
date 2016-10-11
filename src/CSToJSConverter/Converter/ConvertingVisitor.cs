@@ -63,10 +63,10 @@ namespace CSToJSConverter
         public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
             AppendCode($"function {node.Identifier.Text}(");
-            node.ParameterList.Accept(this);
+            Visit(node.ParameterList);
             AppendCodeLine(")");
             AppendCodeLine("{");
-            node.Body.Accept(this);
+            Visit(node.Body);
             AppendCodeLine();
             AppendCode("}");
         }
@@ -80,10 +80,10 @@ namespace CSToJSConverter
         {
             for (int i = 0; i < node.Parameters.Count - 1; i++)
             {
-                node.Parameters[i].Accept(this);
+                Visit(node.Parameters[i]);
                 AppendCode(", ");
             }
-            node.Parameters.Last().Accept(this);
+            Visit(node.Parameters.Last());
         }
 
         public override void VisitParameter(ParameterSyntax node)
@@ -94,7 +94,7 @@ namespace CSToJSConverter
         public override void VisitReturnStatement(ReturnStatementSyntax node)
         {
             AppendCode("return ");
-            node.Expression.Accept(this);
+            Visit(node.Expression);
             AppendCode(";");
         }
 
@@ -205,10 +205,10 @@ namespace CSToJSConverter
         public override void VisitIfStatement(IfStatementSyntax node)
         {
             AppendCode("if (");
-            node.Condition.Accept(this);
+            Visit(node.Condition);
             AppendCodeLine(")");
             AppendCodeLine("{");
-            node.Statement.Accept(this);
+            Visit(node.Statement);
             AppendCodeLine();
             if (node.Else != null)
             {
@@ -216,13 +216,13 @@ namespace CSToJSConverter
                 if (node.Else.Statement.Kind() == SyntaxKind.IfStatement)
                 {
                     AppendCode("else ");
-                    node.Else.Statement.Accept(this);
+                    Visit(node.Else.Statement);
                 }
                 else
                 {
                     AppendCodeLine("else");
                     AppendCodeLine("{");
-                    node.Else.Statement.Accept(this);
+                    Visit(node.Else.Statement);
                     AppendCodeLine();
                     AppendCode("}");
                 }
@@ -241,25 +241,25 @@ namespace CSToJSConverter
             var right = node.Right;
             var operatorToken = node.OperatorToken;
 
-            left.Accept(this);
+            Visit(left);
             AppendCode($" {operatorToken.Text} ");
-            right.Accept(this);
+            Visit(right);
             AppendCode(";");
         }
 
         public override void VisitPrefixUnaryExpression(PrefixUnaryExpressionSyntax node)
         {
             AppendCode(node.OperatorToken.Text);
-            node.Operand.Accept(this);
+            Visit(node.Operand);
         }
 
         public override void VisitWhileStatement(WhileStatementSyntax node)
         {
             AppendCode("while (");
-            node.Condition.Accept(this);
+            Visit(node.Condition);
             AppendCodeLine(")");
             AppendCodeLine("{");
-            node.Statement.Accept(this);
+            Visit(node.Statement);
             AppendCodeLine();
             AppendCode("}");
         }
@@ -268,30 +268,30 @@ namespace CSToJSConverter
         {
             AppendCodeLine("do");
             AppendCodeLine("{");
-            node.Statement.Accept(this);
+            Visit(node.Statement);
             AppendCodeLine();
             AppendCode("} while (");
-            node.Condition.Accept(this);
+            Visit(node.Condition);
             AppendCodeLine(");");
         }
 
         public override void VisitForStatement(ForStatementSyntax node)
         {
             AppendCode("for (");
-            node.Declaration.Accept(this);
+            Visit(node.Declaration);
             AppendCode("; ");
-            node.Condition.Accept(this);
+            Visit(node.Condition);
             AppendCode("; ");
             for (int i = 0; i < node.Incrementors.Count - 1; i++)
             {
                 var inc = node.Incrementors[i];
-                inc.Accept(this);
+                Visit(inc);
                 AppendCode(", ");
             }
-            node.Incrementors.Last().Accept(this);
+            Visit(node.Incrementors.Last());
             AppendCodeLine(")");
             AppendCodeLine("{");
-            node.Statement.Accept(this);
+            Visit(node.Statement);
             AppendCodeLine();
             AppendCode("}");
         }
@@ -302,27 +302,27 @@ namespace CSToJSConverter
             for (int i = 0; i < node.Variables.Count - 1; i++)
             {
                 var inc = node.Variables[i];
-                inc.Accept(this);
+                Visit(inc);
                 AppendCode(", ");
             }
-            node.Variables.Last().Accept(this);
+            Visit(node.Variables.Last());
         }
 
         public override void VisitVariableDeclarator(VariableDeclaratorSyntax node)
         {
             AppendCode(node.Identifier.Text);
-            node.Initializer.Accept(this);
+            Visit(node.Initializer);
         }
 
         public override void VisitEqualsValueClause(EqualsValueClauseSyntax node)
         {
             AppendCode(" = ");
-            node.Value.Accept(this);
+            Visit(node.Value);
         }
 
         public override void VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax node)
         {
-            node.Operand.Accept(this);
+            Visit(node.Operand);
             AppendCode(node.OperatorToken.Text);
         }
     }
