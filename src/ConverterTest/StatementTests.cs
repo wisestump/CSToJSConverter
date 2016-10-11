@@ -7,10 +7,13 @@ namespace ConverterTest
     [TestClass]
     public class StatementTests
     {
+        string input = "";
+        string expected = "";
+
         [TestMethod]
         public void OperatorIfTest()
         {
-            var input =
+            input =
 @"if (age > 14)
 {
 access = true;
@@ -50,11 +53,11 @@ sign = 0;
         [TestMethod]
         public void CycleWhileTest()
         {
-            var input =
+            input =
 @"int i = 0;
 while(i < 10)
 i += 1;";
-            var expected =
+            expected =
 @"var i = 0;
 while (i < 10)
 {
@@ -80,6 +83,42 @@ i += 1;
 }";
             AssertBlock(expected, input);
 
+        }
+
+        [TestMethod]
+        public void CycleDoWhileTest()
+        {
+            input =
+@"int i = 0;
+do
+i += 1;
+while (false);";
+            expected =
+@"var i = 0;
+do
+{
+i += 1;
+} while (false);
+";
+            AssertBlock(expected, input);
+        }
+
+        [TestMethod]
+        public void CycleForTest()
+        {
+            input =
+@"int sum = 0;
+for (int i = 0; i < 10; i++)
+{
+sum += i;
+}";
+            expected =
+@"var sum = 0;
+for (var i = 0; i < 10; i++)
+{
+sum += i;
+}";
+            AssertBlock(expected, input);
         }
     }
 }

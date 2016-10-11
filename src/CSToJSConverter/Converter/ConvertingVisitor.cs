@@ -263,5 +263,67 @@ namespace CSToJSConverter
             AppendCodeLine();
             AppendCode("}");
         }
+
+        public override void VisitDoStatement(DoStatementSyntax node)
+        {
+            AppendCodeLine("do");
+            AppendCodeLine("{");
+            node.Statement.Accept(this);
+            AppendCodeLine();
+            AppendCode("} while (");
+            node.Condition.Accept(this);
+            AppendCodeLine(");");
+        }
+
+        public override void VisitForStatement(ForStatementSyntax node)
+        {
+            AppendCode("for (");
+            node.Declaration.Accept(this);
+            AppendCode("; ");
+            node.Condition.Accept(this);
+            AppendCode("; ");
+            for (int i = 0; i < node.Incrementors.Count - 1; i++)
+            {
+                var inc = node.Incrementors[i];
+                inc.Accept(this);
+                AppendCode(", ");
+            }
+            node.Incrementors.Last().Accept(this);
+            AppendCodeLine(")");
+            AppendCodeLine("{");
+            node.Statement.Accept(this);
+            AppendCodeLine();
+            AppendCode("}");
+        }
+
+        public override void VisitVariableDeclaration(VariableDeclarationSyntax node)
+        {
+            AppendCode("var ");
+            for (int i = 0; i < node.Variables.Count - 1; i++)
+            {
+                var inc = node.Variables[i];
+                inc.Accept(this);
+                AppendCode(", ");
+            }
+            node.Variables.Last().Accept(this);
+        }
+
+        public override void VisitVariableDeclarator(VariableDeclaratorSyntax node)
+        {
+            AppendCode(node.Identifier.Text);
+            node.Initializer.Accept(this);
+        }
+
+        public override void VisitEqualsValueClause(EqualsValueClauseSyntax node)
+        {
+            AppendCode(" = ");
+            node.Value.Accept(this);
+        }
+
+        public override void VisitPostfixUnaryExpression(PostfixUnaryExpressionSyntax node)
+        {
+            node.Operand.Accept(this);
+            AppendCode(node.OperatorToken.Text);
+        }
     }
 }
